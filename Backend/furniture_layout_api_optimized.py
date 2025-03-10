@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query 
 import joblib
 import numpy as np
 import pandas as pd
@@ -29,9 +29,17 @@ def parse_furniture_constraints(furniture_str):
     """Convert furniture string 'Bed,Table,Chair' into a list of furniture items."""
     return [f.strip() for f in furniture_str.split(",") if f.strip() in furniture_sizes]
 
+def check_collision(x, y, fw, fh, placed_items):
+    """Check if new furniture overlaps with already placed items."""
+    for item in placed_items:
+        if len(item) == 5:  # Ensure correct unpacking
+            px, py, pw, ph = item[1], item[2], item[3], item[4]
+            if not (x + fw <= px or px + pw <= x or y + fh <= py or py + ph <= y):
+                return True  # Overlapping detected
+    return False
+
 def is_valid_position(x, y, placed_items, room_w, room_h, min_spacing, obstacles, furniture_type):
     """Ensure furniture fits inside the room, does not overlap obstacles, and maintains spacing."""
-
     fw, fh = furniture_sizes.get(furniture_type, (2, 2))  # Get furniture size
 
     # Ensure furniture stays inside the room
@@ -48,20 +56,49 @@ def is_valid_position(x, y, placed_items, room_w, room_h, min_spacing, obstacles
         if ((x - ox) ** 2 + (y - oy) ** 2) ** 0.5 < min_spacing:
             return False  
 
-    # Ensure spacing from already placed furniture
-    for item in placed_items:
-        if len(item) == 4:  # Expected format (px, py, pw, ph)
-            px, py, pw, ph = item
-        elif len(item) == 2:  # If the entry only has (px, py), assume default size
-            px, py = item
-            pw, ph = 2, 2  # Default small size if not provided
-        else:
-            continue  # Skip incorrectly formatted entries
-
-        if ((x - px) ** 2 + (y - py) ** 2) ** 0.5 < min_spacing:
-            return False  
+    # Ensure spacing from already placed furniture and avoid overlap
+    if check_collision(x, y, fw, fh, placed_items):
+        return False
 
     return True
+
+def place_furniture_in_zones(furniture_list, room_width, room_height):
+    """Place furniture into predefined zones for optimal layout."""
+    furniture_positions = []
+
+    # Define Zones (Sleeping, Work, Lounge, Storage)
+    zone_margin = 2  # Margin for each zone
+
+    # Sleeping Zone (Near walls)
+    sleeping_zone = (0, 0, room_width // 3, room_height // 2)
+    
+    # Work Zone (Near windows)
+    work_zone = (room_width // 3, room_height // 2, room_width // 2, room_height // 2)
+
+    # Lounge Zone (Central)
+    lounge_zone = (room_width // 2, 0, room_width // 2, room_height // 2)
+
+    # Storage Zone (Wall side for wardrobe/bookshelf)
+    storage_zone = (0, room_height // 2, room_width // 3, room_height // 2)
+
+    # Map furniture to zones based on constraints
+    zones = [sleeping_zone, work_zone, lounge_zone, storage_zone]
+
+    # Place furniture based on zones
+    for i, furniture_type in enumerate(furniture_list):
+        fw, fh = furniture_sizes.get(furniture_type, (2, 2))
+
+        # Choose a zone for each piece of furniture
+        zone = zones[i % len(zones)]  # Wrap around if there are more pieces than zones
+        x, y, w, h = zone
+
+        # Adjust to ensure the furniture fits inside the selected zone
+        new_x = random.uniform(x + zone_margin, x + w - fw - zone_margin)
+        new_y = random.uniform(y + zone_margin, y + h - fh - zone_margin)
+
+        furniture_positions.append([furniture_type, round(new_x, 2), round(new_y, 2), fw, fh])
+
+    return furniture_positions
 
 @app.get("/predict_placement/")
 def predict_placement(
@@ -83,16 +120,21 @@ def predict_placement(
     min_spacing = max(room_width, room_height) * 0.2  
     placements = []
 
-    for furniture_type in furniture_list:
+    # Place furniture in predefined zones for optimal layout
+    placements = place_furniture_in_zones(furniture_list, room_width, room_height)
+
+    # Ensure furniture does not overlap obstacles
+    for i, placement in enumerate(placements):
+        name, x, y, fw, fh = placement
         attempts = 0
         while attempts < 200:  
-            x_offset, y_offset = random.uniform(-3, 3), random.uniform(-3, 3)
-            new_x, new_y = min(max(base_x + x_offset, 0), room_width), min(max(base_y + y_offset, 0), room_height)
-
-            if is_valid_position(new_x, new_y, placements, room_width, room_height, min_spacing, obstacles_list, furniture_type):
-                fw, fh = furniture_sizes.get(furniture_type, (2, 2))
-                placements.append([furniture_type, round(new_x, 2), round(new_y, 2), fw, fh])
-                break  
+            if is_valid_position(x, y, placements, room_width, room_height, min_spacing, obstacles_list, name):
+                placements[i] = [name, round(x, 2), round(y, 2), fw, fh]
+                break
+            else:
+                x_offset, y_offset = random.uniform(-5, 5), random.uniform(-5, 5)
+                x = min(max(base_x + x_offset, 0), room_width)
+                y = min(max(base_y + y_offset, 0), room_height)
             attempts += 1  
 
     return {

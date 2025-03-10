@@ -49,5 +49,5 @@ df = pd.DataFrame(data, columns=["Room_Width", "Room_Height", "Furniture_Placeme
 dataset_path = "C:/Users/saidh/Downloads/Furniture_Layout_Optimizer/AI_Furniture_Layout_Optimizer/Dataset/furniture_layout_dataset_5000.csv"
 df.to_csv(dataset_path, index=False)
 
-print(f"✅ Dataset generated successfully and saved to {dataset_path}")
+print(f"Dataset generated successfully and saved to {dataset_path}")
 

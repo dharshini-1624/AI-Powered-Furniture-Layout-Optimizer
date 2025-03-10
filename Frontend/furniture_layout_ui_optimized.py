@@ -6,7 +6,7 @@ st.title("AI Furniture Layout Optimizer")
 
 room_width = st.number_input("Room Width", min_value=5, max_value=20, value=12)
 room_height = st.number_input("Room Height", min_value=5, max_value=20, value=10)
-furniture_constraints = st.text_input("Furniture Constraints (comma-separated)", "Bed,Table,Chair")
+furniture_constraints = st.text_input("Furniture Constraints (comma-separated)", "Bed,Table,Chair,Sofa,Desk,Wardrobe")
 obstacles = st.text_input("Obstacles (optional, format: x1,y1;x2,y2)", "")
 
 if st.button("Generate Layout"):
@@ -29,10 +29,16 @@ if st.button("Generate Layout"):
         ax.set_xlabel("Room Width")
         ax.set_ylabel("Room Height")
 
+        # Color mapping for better visualization
+        colors = ["blue", "red", "green", "purple", "orange", "cyan", "pink", "yellow"]
+        color_map = {}
+
         # Draw furniture
-        for item in furniture_positions:
+        for i, item in enumerate(furniture_positions):
             name, x, y, fw, fh = item
-            rect = plt.Rectangle((x, y), fw, fh, linewidth=2, edgecolor='blue', facecolor='lightblue', label=name)
+            if name not in color_map:
+                color_map[name] = colors[i % len(colors)]
+            rect = plt.Rectangle((x, y), fw, fh, linewidth=2, edgecolor='black', facecolor=color_map[name], alpha=0.6)
             ax.add_patch(rect)
             ax.text(x + fw / 2, y + fh / 2, name, fontsize=8, ha='center', va='center')
 

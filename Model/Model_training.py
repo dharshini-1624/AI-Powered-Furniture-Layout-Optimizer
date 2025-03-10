@@ -64,4 +64,4 @@ def adjust_furniture_positions(predicted_positions, room_width, room_height):
 model_path = "C:/Users/saidh/Downloads/Furniture_Layout_Optimizer/AI_Furniture_Layout_Optimizer/Model/furniture_placement_model_optimized.pkl"
 joblib.dump(model, model_path)
 
-print(f"✅ Model trained and saved successfully to {model_path}!")
+print(f"Model trained and saved successfully to {model_path}!")
