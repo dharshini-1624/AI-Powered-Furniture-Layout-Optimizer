@@ -52,27 +52,6 @@ streamlit run furniture_layout_ui_optimized.py
 
 🔹 The app will display a 2D visualization of the furniture arrangement.
 
-
----
-
-📂 Project Structure
-
-Furniture-Layout-Optimizer/
-│── Backend/                        # FastAPI Backend
-│   └── furniture_layout_api_optimized.py   # Main API
-│   
-│── Dataset/                         # Training dataset
-│
-│── Model/                           # Saved AI model
-│   └── model_training.py                  # Model training script
-│
-│── Frontend/                        # Streamlit UI
-│   └── furniture_layout_ui_optimized.py   # UI script
-│
-│── README.md                        # Project Documentation
-└── requirements.txt                  # Dependencies
-
-
 ---
 
 📦 Requirements
