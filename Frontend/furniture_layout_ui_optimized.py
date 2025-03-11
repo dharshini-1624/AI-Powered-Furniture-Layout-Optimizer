@@ -28,7 +28,6 @@ remaining_area = max_furniture_area
 st.write(f"Room Area: {room_area} sq units")
 st.write(f"Max Furniture Area Allowed: {max_furniture_area} sq units")
 
-
 # User selects furniture
 furniture_constraints = st.multiselect(
     "Select Furniture (based on available space)",
@@ -67,6 +66,13 @@ if st.button("Generate Layout"):
                 room_h = data["room_height"]
                 furniture_positions = data["predicted_positions"]
 
+                # Displaying the furniture placement coordinates first
+                st.write("Furniture Placement Coordinates:")
+                for item in furniture_positions:
+                    name, x, y, fw, fh = item
+                    st.write(f"{name}: ({round(x, 2)}, {round(y, 2)})")
+
+                # Visualization of the furniture layout
                 fig, ax = plt.subplots(figsize=(6, 5))
                 ax.set_xlim(0, room_w)
                 ax.set_ylim(0, room_h)
@@ -76,14 +82,14 @@ if st.button("Generate Layout"):
                 colors = ["blue", "red", "green", "purple", "orange", "cyan", "pink", "yellow"]
                 color_map = {}
 
+                # Loop through furniture and plot each piece with coordinates
                 for i, item in enumerate(furniture_positions):
                     name, x, y, fw, fh = item
                     if name not in color_map:
                         color_map[name] = colors[i % len(colors)]
                     rect = plt.Rectangle((x, y), fw, fh, linewidth=2, edgecolor='black', facecolor=color_map[name], alpha=0.6)
                     ax.add_patch(rect)
-                    ax.text(x + fw / 2, y + fh / 2, name, fontsize=8, ha='center', va='center')
-
+                    ax.text(x + fw / 2, y + fh / 2, f"{name}\n({round(x, 2)}, {round(y, 2)})", fontsize=8, ha='center', va='center')
 
                 plt.title("Optimized Furniture Layout")
                 plt.grid(True)
