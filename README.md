@@ -15,7 +15,7 @@ This project is an AI-powered *Furniture Layout Optimizer* that intelligently ar
 
 ## 🛠 Installation & Setup
 
-### *1️⃣ Clone the Repository*
+1️⃣ Clone the Repository
 bash
 git clone https://github.com/dharshini-1624/AI-Powered-Furniture-Layout-Optimizer
 cd Furniture-Layout-Optimizer
@@ -24,14 +24,18 @@ cd Furniture-Layout-Optimizer
 
 pip install -r requirements.txt
 
-3️⃣ Run the FastAPI Backend
+3️⃣ Replace File Paths 
+
+Make sure to replace the File paths in Model, Backend and Frontend files with your respective system paths 
+
+4️⃣Run the FastAPI Backend
 
 cd Backend
 uvicorn furniture_layout_api_optimized:app --host 0.0.0.0 --port 8080 --reload
 
 ✅ The API will start at: http://127.0.0.1:8080/docs
 
-4️⃣ Run the Streamlit Frontend
+5️⃣ Run the Streamlit Frontend
 
 Open a new terminal and run:
 
